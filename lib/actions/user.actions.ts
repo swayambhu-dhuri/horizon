@@ -101,7 +101,7 @@ export async function getLoggedInUser() {
 
 		return parseStringify(user);
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 		return null;
 	}
 }
@@ -134,7 +134,7 @@ export const createLinkToken = async (user: User) => {
 
 		return parseStringify({ linkToken: response.data.link_token });
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 	}
 };
 
@@ -148,16 +148,6 @@ export const createBankAccount = async ({
 }: createBankAccountProps) => {
 	try {
 		const { database } = await createAdminClient();
-		console.log("BANK DETAILS", {
-			DATABASE_ID,
-			BANK_COLLECTION_ID,
-			userId,
-			bankId,
-			accountId,
-			accessToken,
-			fundingSourceUrl,
-			sharableId,
-		});
 
 		const bankAccount = await database.createDocument(
 			DATABASE_ID!,
@@ -175,7 +165,7 @@ export const createBankAccount = async ({
 
 		return parseStringify(bankAccount);
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 	}
 };
 
@@ -188,7 +178,6 @@ export const exchangePublicToken = async ({
 		const response = await plaidClient.itemPublicTokenExchange({
 			public_token: publicToken,
 		});
-		console.log(response, "RESPONSE");
 
 		const accessToken = response.data.access_token;
 		const itemId = response.data.item_id;
@@ -198,8 +187,6 @@ export const exchangePublicToken = async ({
 			access_token: accessToken,
 		});
 
-		console.log("ACCOUNT RESPONSE", accountsResponse);
-
 		const accountData = accountsResponse.data.accounts[0];
 
 		// Create a processor token for Dwolla using the access token and account ID
@@ -208,8 +195,6 @@ export const exchangePublicToken = async ({
 			account_id: accountData.account_id,
 			processor: "dwolla" as ProcessorTokenCreateRequestProcessorEnum,
 		};
-
-		console.log("REQUEST", request);
 
 		const processorTokenResponse = await plaidClient.processorTokenCreate(
 			request,
@@ -223,12 +208,9 @@ export const exchangePublicToken = async ({
 			bankName: accountData.name,
 		});
 
-		console.log("FUNDING SOURCE URL", fundingSourceUrl);
-
 		// If the funding source URL is not created, throw an error
 		if (!fundingSourceUrl) throw Error;
 
-		console.log("BEFORE BANK");
 		// Create a bank account using the user ID, item ID, account ID, access token, funding source URL, and sharable ID
 		const bankAccount = await createBankAccount({
 			userId: user.$id,
@@ -239,7 +221,6 @@ export const exchangePublicToken = async ({
 			sharableId: encryptId(accountData.account_id),
 		});
 
-		console.log("AFTER BANK", bankAccount);
 		// Revalidate the path to reflect the changes
 		revalidatePath("/");
 
