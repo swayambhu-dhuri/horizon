@@ -218,7 +218,8 @@ export const authFormSchema = (type: string) =>
 			type === "sign-in"
 				? z.string().optional()
 				: z.string().min(3).max(6),
-		dob: type === "sign-in" ? z.string().optional() : z.string().min(3),
+		dateOfBirth:
+			type === "sign-in" ? z.string().optional() : z.string().min(3),
 		ssn: type === "sign-in" ? z.string().optional() : z.string().min(3),
 
 		// Sign in
